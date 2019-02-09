@@ -81,18 +81,29 @@ def find_email(line, lower=True):
     else:
         return ""
 
+def datetime_from_string(datestring, format=None):
+
+    try:
+        dt = pd.to_datetime(datestring, format=format)
+    except ValueError:
+        # This is needed to handle some dates which are
+        # not valid. E.g.: July 18, 2008 at 24:48:37  PDT
+
+        dt = pd.to_datetime(datestring.replace('at 24:', 'at 00:')) + \
+                     pd.Timedelta(1, unit='d')
+
+    return dt
+
 def make_filename(name, email_address, data, email_db,
                   email, format="%Y %m %d"):
 
     try:
-        date_string = pd.to_datetime(data["Date"]).strftime(format=format)
+        dt = datetime_from_string(data["Date"])
     except ValueError:
-        # TODO: Some dates are not recognized
-        # E.g.: July 18, 2008 at 24:48:37  PDT
-        # should not be 24 hours!
-
         print("Date not recognized:", data["Date"])
-        date_string = input("Enter date in 'Y m d' format: ")
+        date_string = input("Enter date in '%s' format:" % format)
+    else:
+        date_string = dt.strftime(format=format)
 
     filename = "{:s} {:s} email.txt".format(name, date_string)
 
