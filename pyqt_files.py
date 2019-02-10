@@ -105,14 +105,11 @@ if __name__ == '__main__':
     ex = App()
 
     # Demonstrate methods
-    #print(ex.openFileNameDialog())
-    #print(ex.selectFolderNameDialog())
-    #ex.show_message("Hello World!")
-    #print(ex.openFileNamesDialog())
-    #print(ex.saveFileDialog())
-    #ex.show()
-
-    window2 = Window()
-    window2.show()
+    print(ex.openFileNameDialog())
+    print(ex.selectFolderNameDialog())
+    ex.show_message("Hello World!")
+    print(ex.openFileNamesDialog())
+    print(ex.saveFileDialog())
+    ex.show()
 
     sys.exit(app.exec_())
