@@ -19,3 +19,17 @@ All subsequent emails from a known source will be saved in the same location aut
 
 Note: This app does not deal with attachments.  You should manually remove attachments before or after archiving the
 text using this app.
+
+
+This is what it looks like:
+
+```
+File contains 258 emails
+Enter number of emails you want to process or 0 to quit.
+> 100
+
+Processing email from surveys4@skype.net
+Email not known. Add to list (y/n)? y
+Friend (f), Family (m), Acquaintance (a), Professional (p), Other (o), Delete (d), Dating (x) ? d
+Saving path: /Users/billtubbs/Documents/MyDocuments/People/To delete/Surveys/Skype
+```
