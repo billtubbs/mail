@@ -1,5 +1,5 @@
 import sys
-from PyQt5.QtWidgets import QLabel, QApplication, QWidget, QInputDialog, QPlainTextEdit, QFileDialog, QVBoxLayout
+from PyQt5.QtWidgets import QLabel, QApplication, QWidget, QInputDialog, QPlainTextEdit, QFileDialog, QVBoxLayout, QScrollArea
 from PyQt5.QtCore import *
 
 """See documentation here: http://pyqt.sourceforge.net/Docs/PyQt5/pyqt4_differences.html#qfiledialog
@@ -105,11 +105,14 @@ if __name__ == '__main__':
     ex = App()
 
     # Demonstrate methods
-    print(ex.openFileNameDialog())
-    print(ex.selectFolderNameDialog())
-    ex.show_message("Hello World!")
+    #print(ex.openFileNameDialog())
+    #print(ex.selectFolderNameDialog())
+    #ex.show_message("Hello World!")
     #print(ex.openFileNamesDialog())
     #print(ex.saveFileDialog())
-    ex.show()
+    #ex.show()
+
+    window2 = Window()
+    window2.show()
 
     sys.exit(app.exec_())
