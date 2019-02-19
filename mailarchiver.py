@@ -7,6 +7,17 @@ Instructions:
     File -> Save As menu option and set the format to
     'Plain text'.  Select the emails you want to archive,
     and it will save them as one large text file.
+
+TODO:
+File "mailarchiver.py", line 128, in make_filename
+    other_file = f.read()
+  File "/Users/billtubbs/anaconda/envs/pyqt/lib/python3.6/codecs.py", line 321, in decode
+    (result, consumed) = self._buffer_decode(data, self.errors, final)
+UnicodeDecodeError: 'utf-8' codec can't decode byte 0xca in position 369: invalid continuation byte
+
+Occurred when processing email from: rtubbs@arcetri.astro.it
+
+TOOD: Process emails in chronological order
 """
 
 import os
@@ -88,7 +99,6 @@ def datetime_from_string(datestring, format=None):
     except ValueError:
         # This is needed to handle some dates which are
         # not valid. E.g.: July 18, 2008 at 24:48:37  PDT
-
         dt = pd.to_datetime(datestring.replace('at 24:', 'at 00:')) + \
                      pd.Timedelta(1, unit='d')
 
@@ -118,14 +128,16 @@ def make_filename(name, email_address, data, email_db,
         else:
             # User may have pressed cancel
             raise err
+            # TODO: Need to handle this not raise error.
     else:
         add_char = ''
         while filename in existing_files:
 
-            # First see if file on disc is the same
-            with open(os.path.join(path, filename), 'r') as f:
+            with open(os.path.join(path, filename), errors='ignore') as f:
                 other_file = f.read()
+                # print("Error reading file %s" % filename.__repr__())
 
+            # First see if file on disc is the same
             if other_file == email:
                 filename = None
                 break
