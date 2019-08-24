@@ -51,7 +51,8 @@ def inspect_email_text(text):
     """
 
     sio = StringIO(text)
-    required_fields = ["From", "Subject", "Date"]
+    required_fields = ["From", "Subject", "Date"]  # TODO: some emails don't
+                                                   # have dates!
     optional_fields = ["To", "Reply-To"]
 
     data = {'Subject': "", 'To': ""}
