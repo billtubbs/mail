@@ -1,0 +1,40 @@
+[project]
+name = "mailarchiver"
+version = "0.1.0"
+description = "Mail.app email archiving tool with PyQt6 GUI"
+authors = [
+    { name = "William Tubbs", email = "bill.tubbs@me.com" }
+]
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "PyQt6>=6.6.0",
+    "ipython>=8.12.0",
+    "pyyaml>=6.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "black>=23.0.0",
+    "pytest>=7.0.0",
+]
+
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+# This is a script-based project, not a package to install
+py-modules = []
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = []
+
+[tool.black]
+line-length = 88
+target-version = ['py310', 'py311', 'py312']
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]

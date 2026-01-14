@@ -1,0 +1,10 @@
+# Mail Archiver Requirements
+# Python 3.10+ required
+
+pandas>=2.3.3
+PyQt6>=6.6.0
+ipython>=8.12.0
+pyyaml>=6.0
+
+# Development dependencies (optional)
+pytest>=7.0.0

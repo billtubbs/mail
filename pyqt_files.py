@@ -1,13 +1,13 @@
 import sys
-from PyQt5.QtWidgets import QLabel, QApplication, QWidget, QInputDialog, QPlainTextEdit, QFileDialog, QVBoxLayout, QScrollArea
-from PyQt5.QtCore import *
+from PyQt6.QtWidgets import QLabel, QApplication, QWidget, QInputDialog, QPlainTextEdit, QFileDialog, QVBoxLayout, QScrollArea
+from PyQt6.QtCore import *
 
-"""See documentation here: http://pyqt.sourceforge.net/Docs/PyQt5/pyqt4_differences.html#qfiledialog
+"""See documentation here: https://www.riverbankcomputing.com/static/Docs/PyQt6/
 """
 
 class App(QWidget):
 
-    def __init__(self, title='PyQt5 app with file dialogs',
+    def __init__(self, title='PyQt6 app with file dialogs',
                  width=640, height=480, use_native=True):
         super().__init__()
         self.title = title
@@ -43,9 +43,9 @@ class App(QWidget):
         self.show()
 
     def get_options(self):
-        options = QFileDialog.Options()
+        options = QFileDialog.Option(0)
         if self.use_native is not True:
-            options |= QFileDialog.DontUseNativeDialog
+            options |= QFileDialog.Option.DontUseNativeDialog
 
         return options
 
@@ -101,7 +101,7 @@ class App(QWidget):
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    app.setStyle('Macintosh')
+    app.setStyle('macos')
     ex = App()
 
     # Demonstrate methods
@@ -112,4 +112,4 @@ if __name__ == '__main__':
     print(ex.saveFileDialog())
     ex.show()
 
-    sys.exit(app.exec_())
+    sys.exit(app.exec())

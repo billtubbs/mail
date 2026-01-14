@@ -1,5 +1,41 @@
 # mail
-Minimal PyQt5 application to archive selected emails from an email application on a local drive.
+Minimal PyQt6 application to archive selected emails from an email application on a local drive.
+
+## Setup
+
+### Prerequisites
+
+- Python 3.10 or higher (Python 3.12 recommended)
+- pip
+
+### Installation
+
+1. Create and activate a virtual environment:
+
+```bash
+# Create virtual environment
+python3 -m venv venv
+
+# Activate on macOS/Linux
+source venv/bin/activate
+```
+
+2. Install dependencies:
+
+```bash
+pip install -r requirements.txt
+```
+
+### VSCode Setup
+
+1. Open the project folder in VSCode
+2. Press `Cmd+Shift+P` (macOS) or `Ctrl+Shift+P` (Windows/Linux)
+3. Type "Python: Select Interpreter"
+4. Choose the interpreter from `./venv/bin/python`
+
+VSCode should now automatically activate the virtual environment when you open a terminal.
+
+## Usage
 
 Instructions:
 1. Export the emails you want to archive from your mail app (e.g. in Mac OS X choose *File -> Save As* and then select 
