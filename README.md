@@ -40,7 +40,8 @@ VSCode should now automatically activate the virtual environment when you open a
 Instructions:
 1. Export the emails you want to archive from your mail app (e.g. in Mac OS X choose *File -> Save As* and then select 
    *Format: Plain text*).  This will create one large text file conatining the text from all the emails with each email 
-   text separated by the `'\x0c'` character.
+   text separated by the `'\x0c'` character.  Note: Uncheck the "Include Attachments" option or it will create an
+   rtfd file archive, which mailarchiver can't read.  Deal with any attachments manually.
 2. Run `python mailarchiver.py` on the command line.  This will open a PyQt dialog box that allows you to find and 
    select the text file from step 1.
 3. Follow the prompts in the command line.  The content of each email is displayed in the PyQt window.
