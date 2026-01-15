@@ -25,14 +25,11 @@ class App(QWidget):
         self.label.setText("")
 
         self.textbox = QPlainTextEdit(self)
-        self.textbox.move(10, 100)
-        self.textbox.resize(420, 320)
         self.textbox.setReadOnly(True)
-        #self.textbox.setPlainText()
-        #l1.setAlignment(Qt.AlignCenter)
 
         self.vbox = QVBoxLayout()
         self.vbox.addWidget(self.label)
+        self.vbox.addWidget(self.textbox, stretch=1)
         self.setLayout(self.vbox)
 
         self.initUI()
