@@ -31,13 +31,17 @@ def parse_emails_from_file(filename, path=None, divider_char="\x0c"):
 
 
 def inspect_email_text(text):
-    """Extracts key information from email header in
-    text.
-    """
+    """Extracts key information from email header in text.
 
+    Args:
+        text: Raw email text including headers and body
+
+    Returns:
+        dict: Email data with fields From, Subject, Date, To, Body, etc.
+              Returns None if required fields (From, Subject, Date) are missing.
+    """
     sio = StringIO(text)
-    required_fields = ["From", "Subject", "Date"]  # TODO: some emails don't
-    # have dates!
+    required_fields = ["From", "Subject", "Date"]
     optional_fields = ["To", "Reply-To"]
 
     data = {"Subject": "", "To": ""}
@@ -51,20 +55,18 @@ def inspect_email_text(text):
             if line.startswith(start_string):
                 data[field] = line[len(start_string) :]
 
-    tests = [field in data.keys() for field in required_fields]
+    missing_fields = [f for f in required_fields if f not in data]
 
-    if not all(tests):
-        print("Some required email fields were missing")
-        import pdb
-
-        pdb.set_trace()
+    if missing_fields:
+        print(f"Missing required fields: {missing_fields}")
+        # Show preview of problematic email text
+        preview = text[:200].replace("\n", "\\n")
+        print(f"Email preview: {preview}...")
+        return None
 
     if line == "":
         line = sio.readline().rstrip()
-    else:
-        import pdb
 
-        pdb.set_trace()
     data["Body"] = sio.readlines()
 
     return data
@@ -123,6 +125,62 @@ def datetime_from_string(datestring, format=None):
         ) + pd.Timedelta(1, unit="d")
 
     return dt
+
+
+def get_email_datetime(email_text):
+    """Extract datetime from raw email text for sorting.
+
+    Args:
+        email_text: Raw email text including headers
+
+    Returns:
+        tuple: (datetime or None, error_message or None)
+    """
+    # Quick parse to find Date field without full inspection
+    for line in email_text.split("\n"):
+        line = line.rstrip()
+        if line == "":
+            break
+        if line.startswith("Date: "):
+            date_str = line[6:]
+            try:
+                return datetime_from_string(date_str), None
+            except (ValueError, TypeError) as e:
+                return None, f"Could not parse date '{date_str}': {e}"
+    return None, "No Date field found"
+
+
+def sort_emails_by_date(emails):
+    """Sort emails by datetime, with unparseable emails at the end.
+
+    Args:
+        emails: List of raw email texts
+
+    Returns:
+        list: Emails sorted by datetime (oldest first), with
+              emails missing valid dates at the end
+    """
+    dated_emails = []
+    undated_emails = []
+
+    for email in emails:
+        dt, error = get_email_datetime(email)
+        if dt is not None:
+            dated_emails.append((dt, email))
+        else:
+            print(f"Warning: {error}")
+            undated_emails.append(email)
+
+    # Sort by datetime (oldest first)
+    dated_emails.sort(key=lambda x: x[0])
+
+    # Return sorted emails, with undated ones at the end
+    sorted_emails = [email for dt, email in dated_emails] + undated_emails
+
+    if undated_emails:
+        print(f"Note: {len(undated_emails)} email(s) without valid dates placed at end")
+
+    return sorted_emails
 
 
 def get_email_date_string(data, format="%Y %m %d"):
@@ -262,7 +320,8 @@ def save_email_to_text_file(filepath, name, date_string, email_content):
     - First email: 'Name YYYY MM DD email.txt' (no suffix)
     - Second email on same date: 'Name YYYY MM DDb email.txt'
     - Third email: 'Name YYYY MM DDc email.txt'
-    - And so on through 'z' (up to 26 additional emails per day)
+    - Through 'z', then continues with 'aa', 'ab', ..., 'az', 'ba', etc.
+    - Supports up to 702 emails per day (1 + 25 + 676)
 
     If a file with the same name exists and contents are identical,
     no action is taken. If contents differ, the function finds the
@@ -288,6 +347,24 @@ def save_email_to_text_file(filepath, name, date_string, email_content):
     def make_suffixed_filename(suffix):
         return "{:s} {:s}{:s} email.txt".format(name, date_string, suffix)
 
+    # Helper to get the next suffix in sequence
+    def next_suffix(suffix):
+        """Get next suffix: b, c, ..., z, aa, ab, ..., az, ba, ..., zz"""
+        if len(suffix) == 1:
+            if suffix == "z":
+                return "aa"
+            else:
+                return chr(ord(suffix) + 1)
+        else:
+            # Two-letter suffix
+            first, second = suffix[0], suffix[1]
+            if second == "z":
+                if first == "z":
+                    return None  # Exhausted all suffixes
+                return chr(ord(first) + 1) + "a"
+            else:
+                return first + chr(ord(second) + 1)
+
     # Helper to safely read file contents
     def safe_read_file(path):
         try:
@@ -312,7 +389,7 @@ def save_email_to_text_file(filepath, name, date_string, email_content):
 
     # Contents differ - find next available suffix starting from 'b'
     suffix = "b"
-    while suffix <= "z":
+    while suffix is not None:
         suffixed_filename = make_suffixed_filename(suffix)
         suffixed_path = os.path.join(filepath, suffixed_filename)
 
@@ -330,10 +407,12 @@ def save_email_to_text_file(filepath, name, date_string, email_content):
             )
 
         # Try next suffix
-        suffix = chr(ord(suffix) + 1)
+        suffix = next_suffix(suffix)
 
-    # Exhausted all suffixes
-    raise ValueError("More than 26 emails on one day from same sender")
+    # Exhausted all suffixes (more than 702 emails on one day)
+    raise ValueError(
+        "Exhausted all filename suffixes (more than 702 emails on one day)"
+    )
 
 
 # Default input and output file locations
@@ -385,6 +464,8 @@ def main():
         sys.exit(0)
 
     emails = parse_emails_from_file(input_file)
+    emails = sort_emails_by_date(emails)
+    print(f"Emails sorted by date (oldest first)")
     emails_processed = []
 
     batch = 0
@@ -402,6 +483,12 @@ def main():
             batch = n
 
         data = inspect_email_text(email)
+        if data is None:
+            print("Skipping email with missing required fields")
+            emails_processed.append(email)  # Mark as processed to remove it
+            batch = batch - 1
+            continue
+
         from_email = find_email(data["From"])
         print("\nProcessing email from", from_email)
 
