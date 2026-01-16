@@ -1,0 +1,19 @@
+email_db.yaml
+data/
+
+# Python
+__pycache__/
+*.egg-info
+
+# Virtual environment
+.venv/
+
+# IDE
+.vscode/
+
+# PyQt
+*.qmlc
+*.jsc
+
+# Mac OS
+.DS_Store

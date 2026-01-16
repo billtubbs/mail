@@ -2,22 +2,8 @@
 as text files on your local storage.
 
 Instructions:
- 1. Before using this you need export the emails you want
-    to archive as text files.  You can do this using the
-    File -> Save As menu option and set the format to
-    'Plain text'.  Select the emails you want to archive,
-    and it will save them as one large text file.
+ - See README.md
 
-TODO:
-File "mailarchiver.py", line 128, in make_filename
-    other_file = f.read()
-  File "/Users/billtubbs/anaconda/envs/pyqt/lib/python3.6/codecs.py", line 321, in decode
-    (result, consumed) = self._buffer_decode(data, self.errors, final)
-UnicodeDecodeError: 'utf-8' codec can't decode byte 0xca in position 369: invalid continuation byte
-
-Occurred when processing email from: rtubbs@arcetri.astro.it
-
-TOOD: Process emails in chronological order
 """
 
 import os
@@ -102,18 +88,29 @@ def clean_text_for_display(text):
     Handles various line ending formats and problematic characters.
     """
     # Normalize line endings first
-    text = text.replace('\r\n', '\n').replace('\r', '\n')
+    text = text.replace("\r\n", "\n").replace("\r", "\n")
     # Filter to printable characters, preserving newlines and tabs
-    text = ''.join(c if c.isprintable() or c in '\n\t' else ' ' for c in text)
+    text = "".join(c if c.isprintable() or c in "\n\t" else " " for c in text)
     return text
 
 
 def datetime_from_string(datestring, format=None):
     # Strip timezone abbreviations that pandas can't parse
-    tz_abbrevs = ['PST', 'PDT', 'MST', 'MDT', 'CST', 'CDT', 'EST', 'EDT', 'GMT', 'UTC']
+    tz_abbrevs = [
+        "PST",
+        "PDT",
+        "MST",
+        "MDT",
+        "CST",
+        "CDT",
+        "EST",
+        "EDT",
+        "GMT",
+        "UTC",
+    ]
     cleaned = datestring
     for tz in tz_abbrevs:
-        cleaned = cleaned.replace(' ' + tz, '').replace(tz, '')
+        cleaned = cleaned.replace(" " + tz, "").replace(tz, "")
     cleaned = cleaned.strip()
 
     try:
@@ -197,7 +194,9 @@ def validate_email_db(email_db):
         raise ValueError(error_msg)
 
     # Sort entries alphabetically by email address
-    sorted_email_db = dict(sorted(email_db.items(), key=lambda x: x[0].lower()))
+    sorted_email_db = dict(
+        sorted(email_db.items(), key=lambda x: x[0].lower())
+    )
 
     return sorted_email_db
 
@@ -228,7 +227,13 @@ def save_email_db(email_db, filename="email_db.yaml"):
     """Save address database."""
 
     with open(filename, "w") as f:
-        yaml.dump(email_db, f, default_flow_style=False, allow_unicode=True, sort_keys=False)
+        yaml.dump(
+            email_db,
+            f,
+            default_flow_style=False,
+            allow_unicode=True,
+            sort_keys=False,
+        )
 
     print("Address database saved to file '{}'.".format(filename))
 
@@ -306,8 +311,8 @@ def save_email_to_text_file(filepath, name, date_string, email_content):
         return "Identical file already exists: '{}'".format(base_filename)
 
     # Contents differ - find next available suffix starting from 'b'
-    suffix = 'b'
-    while suffix <= 'z':
+    suffix = "b"
+    while suffix <= "z":
         suffixed_filename = make_suffixed_filename(suffix)
         suffixed_path = os.path.join(filepath, suffixed_filename)
 
@@ -320,7 +325,9 @@ def save_email_to_text_file(filepath, name, date_string, email_content):
         # File exists - check if contents are identical
         suffixed_content = safe_read_file(suffixed_path)
         if suffixed_content is not None and suffixed_content == email_content:
-            return "Identical file already exists: '{}'".format(suffixed_filename)
+            return "Identical file already exists: '{}'".format(
+                suffixed_filename
+            )
 
         # Try next suffix
         suffix = chr(ord(suffix) + 1)
@@ -330,8 +337,12 @@ def save_email_to_text_file(filepath, name, date_string, email_content):
 
 
 # Default input and output file locations
-DEFAULT_INPUT_PATH = os.path.join(os.path.expanduser("~"), "Desktop/Emails to file")
-DEFAULT_SAVE_PATH = os.path.join(os.path.expanduser("~"), "Documents", "MyDocuments/People")
+DEFAULT_INPUT_PATH = os.path.join(
+    os.path.expanduser("~"), "Desktop/Emails to file"
+)
+DEFAULT_SAVE_PATH = os.path.join(
+    os.path.expanduser("~"), "Documents", "MyDocuments/People"
+)
 
 # Sub-folders for email storage
 SUB_FOLDERS = {
@@ -436,7 +447,9 @@ def main():
             name = email_db[from_email]["name"]
             filepath = email_db[from_email]["path"]
             date_string = get_email_date_string(data)
-            result = save_email_to_text_file(filepath, name, date_string, email)
+            result = save_email_to_text_file(
+                filepath, name, date_string, email
+            )
             print(result)
 
             emails_processed.append(email)

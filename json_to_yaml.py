@@ -18,20 +18,26 @@ def json_to_yaml(json_path: str, yaml_path: str | None = None) -> None:
     json_path = Path(json_path)
 
     if yaml_path is None:
-        yaml_path = json_path.with_suffix('.yaml')
+        yaml_path = json_path.with_suffix(".yaml")
     else:
         yaml_path = Path(yaml_path)
 
-    with open(json_path, 'r') as f:
+    with open(json_path, "r") as f:
         data = json.load(f)
 
-    with open(yaml_path, 'w') as f:
-        yaml.dump(data, f, default_flow_style=False, allow_unicode=True, sort_keys=False)
+    with open(yaml_path, "w") as f:
+        yaml.dump(
+            data,
+            f,
+            default_flow_style=False,
+            allow_unicode=True,
+            sort_keys=False,
+        )
 
     print(f"Converted {json_path} -> {yaml_path}")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     if len(sys.argv) < 2:
         print("Usage: python json_to_yaml.py <input.json> [output.yaml]")
         sys.exit(1)
