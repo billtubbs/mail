@@ -1,8 +1,8 @@
 import sys
 from PyQt6.QtWidgets import (
-    QLabel,
     QApplication,
     QWidget,
+    QLineEdit,
     QPlainTextEdit,
     QFileDialog,
     QVBoxLayout,
@@ -26,11 +26,9 @@ class App(QWidget):
         self.height = height
         self.use_native = use_native
 
-        self.label = QLabel()
-
+        self.label = QLineEdit()
+        self.label.setReadOnly(True)
         self.label.setFixedWidth(420)
-        self.label.move(20, 200)
-        # self.label.setAlignment(Qt.AlignCenter)
         self.label.setText("")
 
         self.textbox = QPlainTextEdit(self)

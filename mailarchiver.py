@@ -267,7 +267,7 @@ def load_email_db(filename="email_db.yaml"):
     """
     try:
         with open(filename, "r") as f:
-            email_db = yaml.safe_load(f)
+            email_db = yaml.load(f, Loader=yaml.CLoader)
             if email_db is None:
                 email_db = {}
     except FileNotFoundError:
@@ -288,6 +288,7 @@ def save_email_db(email_db, filename="email_db.yaml"):
         yaml.dump(
             email_db,
             f,
+            Dumper=yaml.CDumper,
             default_flow_style=False,
             allow_unicode=True,
             sort_keys=False,
@@ -466,10 +467,52 @@ def main():
     emails = parse_emails_from_file(input_file)
     emails = sort_emails_by_date(emails)
     print(f"Emails sorted by date (oldest first)")
+
+    # --- Pass 1: Automatically process emails from known addresses ---
+    print("\n--- Pass 1: Processing emails from known addresses ---")
+    unrecognized_emails = []
+    pass1_count = 0
+
+    for email in emails:
+        data = inspect_email_text(email)
+        if data is None:
+            print("Skipping email with missing required fields")
+            continue
+
+        from_email = find_email(data["From"])
+
+        if from_email in email_db:
+            print(f"\nProcessing email from {from_email}")
+            name = email_db[from_email]["name"]
+            filepath = email_db[from_email]["path"]
+            date_string = get_email_date_string(data)
+            result = save_email_to_text_file(filepath, name, date_string, email)
+            print(result)
+            pass1_count += 1
+        else:
+            unrecognized_emails.append(email)
+
+    print(
+        f"\nPass 1 complete: {pass1_count} emails processed, "
+        f"{len(unrecognized_emails)} with unrecognized addresses."
+    )
+
+    # Save DB and update input file (removing processed emails) after pass 1
+    save_email_db(email_db)
+    save_emails_to_file(unrecognized_emails, input_file)
+
+    if not unrecognized_emails:
+        print("All emails processed.")
+        window.show()
+        print("Close window to exit.")
+        sys.exit(app.exec())
+
+    # --- Pass 2: Interactively handle emails from unrecognized addresses ---
+    print("\n--- Pass 2: Processing emails from unrecognized addresses ---")
     emails_processed = []
 
     batch = 0
-    for email in emails:
+    for email in list(unrecognized_emails):
         if batch == 0:
             n = None
             print("Enter number of emails you want to process or 0 to quit.")
@@ -485,8 +528,8 @@ def main():
         data = inspect_email_text(email)
         if data is None:
             print("Skipping email with missing required fields")
-            emails_processed.append(email)  # Mark as processed to remove it
-            batch = batch - 1
+            emails_processed.append(email)
+            batch -= 1
             continue
 
         from_email = find_email(data["From"])
@@ -495,9 +538,12 @@ def main():
         window.show_message("Email from: " + data["From"])
         window.show_text(clean_text_for_display(email))
 
-        # Check if email address already known
         if from_email not in email_db:
-            r = input("Email not known. Add to list (y/n)? ").lower()
+            while True:
+                r = input("Email not known. Add to list (y/n)? ").lower()
+                if r in ("y", "n", "q"):
+                    break
+                print("Please enter 'y' or 'n'.")
             if r == "y":
                 options = ["%s (%s)" % (v, k) for k, v in KEY_CHOICES.items()]
                 option_text = ", ".join(options)
@@ -511,7 +557,6 @@ def main():
                     break
 
                 group = KEY_CHOICES[r]
-
                 path = os.path.join(DEFAULT_SAVE_PATH, SUB_FOLDERS[group])
                 path = window.selectFolderNameDialog(directory=path)
 
@@ -529,36 +574,40 @@ def main():
             elif r == "q":
                 break
 
-        # Save email to file
+        # Save email to file if address was added to DB
         if from_email in email_db:
             name = email_db[from_email]["name"]
             filepath = email_db[from_email]["path"]
             date_string = get_email_date_string(data)
-            result = save_email_to_text_file(
-                filepath, name, date_string, email
-            )
+            result = save_email_to_text_file(filepath, name, date_string, email)
             print(result)
-
             emails_processed.append(email)
-            batch = batch - 1
+            batch -= 1
 
             if batch == 0:
-                # Do a save of results
                 save_email_db(email_db)
-                emails = [
-                    email for email in emails if email not in emails_processed
+                unrecognized_emails = [
+                    e for e in unrecognized_emails if e not in emails_processed
                 ]
-                save_emails_to_file(emails, input_file)
-
+                save_emails_to_file(unrecognized_emails, input_file)
         else:
             print("Email was not added")
 
+    import time
+    t = time.perf_counter()
     save_email_db(email_db)
+    print(f"  (save_email_db: {time.perf_counter() - t:.2f}s)")
 
-    emails = [email for email in emails if email not in emails_processed]
-    save_emails_to_file(emails, input_file)
+    t = time.perf_counter()
+    unrecognized_emails = [
+        e for e in unrecognized_emails if e not in emails_processed
+    ]
+    save_emails_to_file(unrecognized_emails, input_file)
+    print(f"  (save_emails_to_file: {time.perf_counter() - t:.2f}s)")
 
+    t = time.perf_counter()
     window.show()
+    print(f"  (window.show: {time.perf_counter() - t:.2f}s)")
     print("Close window to exit.")
 
     sys.exit(app.exec())
